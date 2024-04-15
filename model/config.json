@@ -1,0 +1,4 @@
+{
+	"asmEncoder": "model/asmCodeEncoer/clap-asm/",
+	"srcEncoder": "model/sourceCodeEncoder/codet5p-110m-embedding/"
+}

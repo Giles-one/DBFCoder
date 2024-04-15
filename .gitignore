@@ -1,0 +1,24 @@
+*.swp
+trash/
+wandb/
+summary/
+
+# datsets stuff
+datasets/train/*
+datasets/validation/*
+datasets/evaluation/*
+!datasets/train/.gitkeep
+!datasets/validation/.gitkeep
+!datasets/evaluation/.gitkeep
+
+# model stuff
+model/asmCodeEncoer/clap-asm/*
+model/sourceCodeEncoder/codet5p-110m-embedding/*
+!model/asmCodeEncoer/clap-asm/.gitkeep
+!model/sourceCodeEncoder/codet5p-110m-embedding/.gitkeep
+
+# experiment stuff
+experiment/*.json
+experiment/images/*.png
+
+
