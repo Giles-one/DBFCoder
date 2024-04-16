@@ -1,0 +1,16 @@
+opti:
+  - O0
+  - O1
+  - O2
+  - O3
+
+arch:
+  - x86_32
+  - x86_64
+
+compiler:
+  - clang-4.0
+  - clang-obfus-fla
+  - clang-obfus-sub
+  - clang-obfus-bcf
+  - clang-obfus-all

@@ -2,7 +2,7 @@
 test.py
 trash/
 wandb/
-summary/
+# summary/
 __pycache__/
 
 # datsets stuff
@@ -22,7 +22,7 @@ model/sourceCodeEncoder/codet5p-110m-embedding/*
 !model/sourceCodeEncoder/codet5p-110m-embedding/.gitkeep
 
 # experiment stuff
-experiment/*.json
-experiment/images/*.png
+# experiment/*.json
+# experiment/images/*.png
 
 

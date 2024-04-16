@@ -14,7 +14,7 @@ logging.basicConfig(
     level=logging.ERROR
 )
 
-def createCrossOptimationFilterFunction(anchorOption: Dict, positiveOption: Dict, interRelation: Dict) -> Callable:
+def createCrossOptimizationFilterFunction(anchorOption: Dict, positiveOption: Dict, interRelation: Dict) -> Callable:
     def filterFunction(self: DBFCoderDatset, fnPiar) -> bool:
         anchorFunctionIdx, positiveFunctionIdx = fnPiar
         if anchorFunctionIdx == positiveFunctionIdx:
@@ -41,7 +41,7 @@ def createCrossOptimationFilterFunction(anchorOption: Dict, positiveOption: Dict
 
     return filterFunction
 
-def evaluateHandler(anchorOption, positiveOption, interRelation, saveTo, **kwargs):
+def evaluateHandler(modelPath: str, anchorOption, positiveOption, interRelation, saveTo, **kwargs):
     y_score = []
     numBatch = 500
     batchSize = 2
@@ -59,19 +59,18 @@ def evaluateHandler(anchorOption, positiveOption, interRelation, saveTo, **kwarg
         config = json.load(fp)
     model = DBFCoder(config)
 
-    modelWeight = torch.load('../best_model.pt', map_location=device)
+    modelWeight = torch.load(modelPath, map_location=device)
     model.load_state_dict(modelWeight)
     asmTokenizer, srcTokenizer = model.tokenizer
 
     evaluateDataset = DBFCoderDatset(
         'datasets/evaluation',
         shuffle=True,
-        maxNumFunc=100000,
         groupPattern='permutation'  # random | permutation | combination
     )
     evaluateDataset.checker()
     evaluateDataset.filter(
-        function=createCrossOptimationFilterFunction(
+        function=createCrossOptimizationFilterFunction(
             anchorOption=anchorOption,
             positiveOption=positiveOption,
             interRelation=interRelation
@@ -129,11 +128,11 @@ def evaluateHandler(anchorOption, positiveOption, interRelation, saveTo, **kwarg
 def evaluate(args):
     anchorOption = {
         'compiler': args.anchorCompiler,
-        'optimation': args.anchorOptimization
+        'optimization': args.anchorOptimization
     }
     positiveOption = {
         'compiler': args.positiveCompiler,
-        'optimation': args.positiveOptimization
+        'optimization': args.positiveOptimization
     }
     interRelation = {
         'arch': 'equal',
@@ -141,9 +140,9 @@ def evaluate(args):
     }
     saveTo = 'experiment/lab2_%s-%sVS%s-%s.json' % (
         anchorOption['compiler'],
-        anchorOption['optimation'],
+        anchorOption['optimization'],
         positiveOption['compiler'],
-        positiveOption['optimation']
+        positiveOption['optimization']
     )
     print(f'anchorOption: {anchorOption}')
     print(f'positiveOption: {positiveOption}')
@@ -151,6 +150,7 @@ def evaluate(args):
     print('saving to: ', saveTo)
 
     evaluateHandler(
+        args.model,
         anchorOption,
         positiveOption,
         interRelation,
@@ -160,7 +160,8 @@ def evaluate(args):
     )
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Evaluate DBFCoder')
+    parser = argparse.ArgumentParser(description='Evaluate DBFCoder lab2')
+    parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--anchorCompiler', type=str, default='clang-4.0')
     parser.add_argument('--anchorOptimization', type=str, default='O0')
     parser.add_argument('--positiveCompiler', type=str, default='clang-4.0')

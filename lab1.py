@@ -38,10 +38,10 @@ def createCrossOptimationFilterFunction(anchorOption: Dict, positiveOption: Dict
     return filterFunction
 
 
-def evaluathandler(anchorOption, positiveOption, interRelation, saveTo):
+def evaluatehandler(modelPath: str, anchorOption, positiveOption, interRelation, saveTo):
     y_true = []
     y_score = []
-    numBatch = 30
+    numBatch = 500
     device = torch.device(
         "cuda" if torch.cuda.is_available() else 'cpu'
     )
@@ -50,14 +50,14 @@ def evaluathandler(anchorOption, positiveOption, interRelation, saveTo):
         config = json.load(fp)
     model = DBFCoder(config)
 
-    modelWeight = torch.load('../best_model.pt', map_location=device)
+    modelWeight = torch.load(modelPath, map_location=device)
     model.load_state_dict(modelWeight)
     asmTokenizer, srcTokenizer = model.tokenizer
 
     evaluateDataset = DBFCoderDatset(
         'datasets/evaluation',
         shuffle=True,
-        maxNumFunc=100000,
+        # maxNumFunc=100000,
         groupPattern='permutation'  # random | permutation | combination
     )
     evaluateDataset.checker()
@@ -100,20 +100,15 @@ def evaluathandler(anchorOption, positiveOption, interRelation, saveTo):
         srcInput = {k: v.to(device) for k, v in srcInput.items()}
         out = model(asmInput, srcInput, isTrain=False)
         scores = out['scores'].tolist()
-        for i, row in enumerate(scores):
-            for j, score in enumerate(row):
-                label = 1 if i == j else 0
-                y_true.append(label)
-                y_score.append(score)
+        y_score.append(scores)
         progressBar.update(1)
-        if batchIndex > numBatch:
+        if batchIndex >= numBatch:
             break
 
     recordObj = {
         'anchorOption': anchorOption,
         'positiveOption': positiveOption,
         'interRelation': interRelation,
-        'y_true': y_true,
         'y_score': y_score
     }
     with open(saveTo, 'w') as fp:
@@ -122,11 +117,11 @@ def evaluathandler(anchorOption, positiveOption, interRelation, saveTo):
 def evaluate(args):
     anchorOption = {
         'compiler': args.anchorCompiler,
-        'optimation': args.anchorOptimization
+        'optimization': args.anchorOptimization
     }
     positiveOption = {
         'compiler': args.positiveCompiler,
-        'optimation': args.positiveOptimization
+        'optimization': args.positiveOptimization
     }
     interRelation = {
         'arch': 'equal',
@@ -134,18 +129,19 @@ def evaluate(args):
     }
     saveTo = 'experiment/lab1_%s-%sVS%s-%s.json' % (
         anchorOption['compiler'],
-        anchorOption['optimation'],
+        anchorOption['optimization'],
         positiveOption['compiler'],
-        positiveOption['optimation']
+        positiveOption['optimization']
     )
     print(f'anchorOption: {anchorOption}')
     print(f'positiveOption: {positiveOption}')
     print(f'interRelation: {interRelation}')
     print('saving to: ', saveTo)
-    evaluathandler(anchorOption, positiveOption, interRelation, saveTo)
+    evaluatehandler(args.model, anchorOption, positiveOption, interRelation, saveTo)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Evaluate DBFCoder')
+    parser = argparse.ArgumentParser(description='Evaluate DBFCoder lab1')
+    parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--anchorCompiler', type=str, default='clang-4.0')
     parser.add_argument('--anchorOptimization', type=str, default='O0')
     parser.add_argument('--positiveCompiler', type=str, default='clang-4.0')

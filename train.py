@@ -1,7 +1,4 @@
-import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '7'
-os.environ["WANDB_MODE"] = "online"
-
+import json
 import wandb
 import torch
 
@@ -129,10 +126,8 @@ def train():
         drop_last=True
     )
 
-    config = {
-        'asmEncoder': 'model/asmCodeEncoer/clap-asm/',
-        'srcEncoder': 'model/sourceCodeEncoder/codet5p-110m-embedding/'
-    }
+    with open('model/config.json', 'r') as fp:
+        config = json.load(fp)
     model = DBFCoder(config)
     model.to(device)
     asmTokenizer, srcTokenizer = model.tokenizer

@@ -1,5 +1,6 @@
 import json
 import logging
+import os.path
 
 from collections import defaultdict
 from matplotlib import pyplot as plt
@@ -32,147 +33,27 @@ def diaplyROC(fpr, tpr, aucValue, saveTo: str) -> None:
     plt.show()
     plt.savefig(saveTo)
 
-
-def lab1_O0XO1():
-    dataFile = 'experiment/lab1_clang-4.0-O0VSclang-4.0-O1.json'
+def lab1_template(banner: str, dataFile: str):
+    scores = []
+    lables = []
     with open(dataFile, 'r') as fp:
         data = json.load(fp)
-    yTrue = data['y_true']
     yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
+
+    for batch in yScore:
+        for positiveIdx, score in enumerate(batch):
+            sampleLength = len(score)
+            label = [1 if idx == positiveIdx else 0 for idx in range(sampleLength)]
+            scores.extend(score)
+            lables.extend(label)
+    fpr, tpr, thresholds = roc_curve(lables, scores)
     aucValue = auc(fpr, tpr)
-    logger.info(f'AUC O0xO1: {aucValue}')
+    logger.info(f'{banner}: AUC {aucValue}')
 
-    imagePath = 'experiment/images/lab1_ROC_O0XO1.png'
+    dirname, basename = os.path.dirname(dataFile), os.path.basename(dataFile)
+    imagePath = os.path.join(dirname, 'images' , basename.replace('.json', '.png'))
     diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC O0xO1: {imagePath}')
-
-def lab1_O0XO2():
-    dataFile = 'experiment/lab1_clang-4.0-O0VSclang-4.0-O2.json'
-    with open(dataFile, 'r') as fp:
-        data = json.load(fp)
-    yTrue = data['y_true']
-    yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
-    aucValue = auc(fpr, tpr)
-    logger.info(f'AUC O0xO2: {aucValue}')
-
-    imagePath = 'experiment/images/lab1_ROC_O0XO2.png'
-    diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC O0xO2: {imagePath}')
-
-def lab1_O0XO3():
-    dataFile = 'experiment/lab1_clang-4.0-O0VSclang-4.0-O3.json'
-    with open(dataFile, 'r') as fp:
-        data = json.load(fp)
-    yTrue = data['y_true']
-    yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
-    aucValue = auc(fpr, tpr)
-    logger.info(f'AUC O0xO3: {aucValue}')
-
-    imagePath = 'experiment/images/lab1_ROC_O0XO3.png'
-    diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC O0xO3: {imagePath}')
-
-def lab1_O1XO2():
-    dataFile = 'experiment/lab1_clang-4.0-O1VSclang-4.0-O2.json'
-    with open(dataFile, 'r') as fp:
-        data = json.load(fp)
-    yTrue = data['y_true']
-    yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
-    aucValue = auc(fpr, tpr)
-    logger.info(f'AUC O1xO2: {aucValue}')
-
-    imagePath = 'experiment/images/lab1_ROC_O1XO2.png'
-    diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC O1xO2: {imagePath}')
-
-def lab1_O1XO3():
-    dataFile = 'experiment/lab1_clang-4.0-O1VSclang-4.0-O3.json'
-    with open(dataFile, 'r') as fp:
-        data = json.load(fp)
-    yTrue = data['y_true']
-    yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
-    aucValue = auc(fpr, tpr)
-    logger.info(f'AUC O1xO3: {aucValue}')
-
-    imagePath = 'experiment/images/lab1_ROC_O1XO3.png'
-    diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC O1xO3: {imagePath}')
-
-def lab1_O2XO3():
-    dataFile = 'experiment/lab1_clang-4.0-O2VSclang-4.0-O3.json'
-    with open(dataFile, 'r') as fp:
-        data = json.load(fp)
-    yTrue = data['y_true']
-    yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
-    aucValue = auc(fpr, tpr)
-    logger.info(f'AUC O2xO3: {aucValue}')
-
-    imagePath = 'experiment/images/lab1_ROC_O2XO3.png'
-    diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC O2xO3: {imagePath}')
-
-def lab1_sub():
-    dataFile = 'experiment/lab1_clang-4.0-O0VSclang-obfus-sub-O0.json'
-    with open(dataFile, 'r') as fp:
-        data = json.load(fp)
-    yTrue = data['y_true']
-    yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
-    aucValue = auc(fpr, tpr)
-    logger.info(f'AUC sub: {aucValue}')
-
-    imagePath = 'experiment/images/lab1_ROC_sub.png'
-    diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC sub: {imagePath}')
-
-def lab1_bcf():
-    dataFile = 'experiment/lab1_clang-4.0-O0VSclang-obfus-bcf-O0.json'
-    with open(dataFile, 'r') as fp:
-        data = json.load(fp)
-    yTrue = data['y_true']
-    yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
-    aucValue = auc(fpr, tpr)
-    logger.info(f'AUC bcf: {aucValue}')
-
-    imagePath = 'experiment/images/lab1_ROC_bcf.png'
-    diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC bcf: {imagePath}')
-
-def lab1_fla():
-    dataFile = 'experiment/lab1_clang-4.0-O0VSclang-obfus-fla-O0.json'
-    with open(dataFile, 'r') as fp:
-        data = json.load(fp)
-    yTrue = data['y_true']
-    yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
-    aucValue = auc(fpr, tpr)
-    logger.info(f'AUC fla: {aucValue}')
-
-    imagePath = 'experiment/images/lab1_ROC_fla.png'
-    diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC fla: {imagePath}')
-
-def lab1_all():
-    dataFile = 'experiment/lab1_clang-4.0-O0VSclang-obfus-all-O0.json'
-    with open(dataFile, 'r') as fp:
-        data = json.load(fp)
-    yTrue = data['y_true']
-    yScore = data['y_score']
-    fpr, tpr, thresholds = roc_curve(yTrue, yScore)
-    aucValue = auc(fpr, tpr)
-    logger.info(f'AUC all: {aucValue}')
-
-    imagePath = 'experiment/images/lab1_ROC_all.png'
-    diaplyROC(fpr, tpr, aucValue, imagePath)
-    logger.info(f'ROC all: {imagePath}')
-
+    logger.info(f'{banner}: ROC {imagePath}')
 
 def getrRecallAtK(labels, scores, atK):
     socresIndex = list(range(len(scores)))
@@ -228,19 +109,17 @@ def lab2_tmplate(banner, dataFile):
         logger.info(f'{banner} {k}: {v}')
 
 def lab1():
-    lab1_O0XO1()
-    lab1_O0XO2()
-    lab1_O0XO3()
+    lab1_template('lab1_O0-O1', 'experiment/lab1_clang-4.0-O0VSclang-4.0-O1.json')
+    lab1_template('lab1_O0-O2', 'experiment/lab1_clang-4.0-O0VSclang-4.0-O2.json')
+    lab1_template('lab1_O0-O3', 'experiment/lab1_clang-4.0-O0VSclang-4.0-O3.json')
+    lab1_template('lab1_O1-O2', 'experiment/lab1_clang-4.0-O1VSclang-4.0-O2.json')
+    lab1_template('lab1_O1-O3', 'experiment/lab1_clang-4.0-O1VSclang-4.0-O3.json')
+    lab1_template('lab1_O2-O3', 'experiment/lab1_clang-4.0-O2VSclang-4.0-O3.json')
 
-    lab1_O1XO2()
-    lab1_O1XO3()
-
-    lab1_O2XO3()
-
-    lab1_sub()
-    lab1_bcf()
-    lab1_fla()
-    lab1_all()
+    lab1_template('lab1_sub', 'experiment/lab1_clang-4.0-O0VSclang-obfus-sub-O0.json')
+    lab1_template('lab1_bcf', 'experiment/lab1_clang-4.0-O0VSclang-obfus-bcf-O0.json')
+    lab1_template('lab1_fla', 'experiment/lab1_clang-4.0-O0VSclang-obfus-fla-O0.json')
+    lab1_template('lab1_all', 'experiment/lab1_clang-4.0-O0VSclang-obfus-all-O0.json')
 
 def lab2():
     lab2_tmplate('lab2_O0XO1', 'experiment/lab2_clang-4.0-O0VSclang-4.0-O1.json')
