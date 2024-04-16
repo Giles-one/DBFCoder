@@ -1,7 +1,9 @@
 *.swp
+test.py
 trash/
 wandb/
 summary/
+__pycache__/
 
 # datsets stuff
 datasets/train/*
@@ -12,8 +14,10 @@ datasets/evaluation/*
 !datasets/evaluation/.gitkeep
 
 # model stuff
+model/save/*
 model/asmCodeEncoer/clap-asm/*
 model/sourceCodeEncoder/codet5p-110m-embedding/*
+!model/save/.gitkeep
 !model/asmCodeEncoer/clap-asm/.gitkeep
 !model/sourceCodeEncoder/codet5p-110m-embedding/.gitkeep
 

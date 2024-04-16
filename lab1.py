@@ -3,7 +3,7 @@ import torch
 import argparse
 
 from tqdm import tqdm
-from typing import  Dict, Callable
+from typing import Dict, Callable
 
 from DBFCoder import DBFCoder
 from utils import DBFCoderDatset, DBFCollate
@@ -34,29 +34,31 @@ def createCrossOptimationFilterFunction(anchorOption: Dict, positiveOption: Dict
                 return False
 
         return True
+
     return filterFunction
 
-def evaluating(anchorOption, positiveOption, interRelation, saveTo):
+
+def evaluathandler(anchorOption, positiveOption, interRelation, saveTo):
     y_true = []
     y_score = []
-    numBatch = 500
+    numBatch = 30
     device = torch.device(
-        "cpu" if torch.cuda.is_available() else 'cpu'
+        "cuda" if torch.cuda.is_available() else 'cpu'
     )
 
     with open('model/config.json', 'r') as fp:
         config = json.load(fp)
     model = DBFCoder(config)
 
-    modelWeight = torch.load('model_14200_steps.pt', map_location=device)
+    modelWeight = torch.load('../best_model.pt', map_location=device)
     model.load_state_dict(modelWeight)
     asmTokenizer, srcTokenizer = model.tokenizer
 
     evaluateDataset = DBFCoderDatset(
         'datasets/evaluation',
         shuffle=True,
-        # maxNumFunc=10000,
-        randomGroup=False
+        maxNumFunc=100000,
+        groupPattern='permutation'  # random | permutation | combination
     )
     evaluateDataset.checker()
     evaluateDataset.filter(
@@ -75,8 +77,11 @@ def evaluating(anchorOption, positiveOption, interRelation, saveTo):
         collate_fn=DBFCollate,
         drop_last=True
     )
+
     model.eval()
     torch.no_grad()
+    model.to(device)
+
     progressBar = tqdm(total=numBatch, desc='Evaluating...')
     for batchIndex, batch in enumerate(evaluateDataloader):
         asmInput = asmTokenizer(
@@ -103,6 +108,7 @@ def evaluating(anchorOption, positiveOption, interRelation, saveTo):
         progressBar.update(1)
         if batchIndex > numBatch:
             break
+
     recordObj = {
         'anchorOption': anchorOption,
         'positiveOption': positiveOption,
@@ -113,16 +119,7 @@ def evaluating(anchorOption, positiveOption, interRelation, saveTo):
     with open(saveTo, 'w') as fp:
         json.dump(recordObj, fp, indent='\t')
 
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Evaluate DBFCoder')
-    parser.add_argument('--anchorCompiler', type=str, default='clang-4.0')
-    parser.add_argument('--anchorOptimization', type=str, default='O0')
-    parser.add_argument('--positiveCompiler', type=str, default='clang-4.0')
-    parser.add_argument('--positiveOptimization', type=str, default='O1')
-
-    args = parser.parse_args()
-
+def evaluate(args):
     anchorOption = {
         'compiler': args.anchorCompiler,
         'optimation': args.anchorOptimization
@@ -145,69 +142,14 @@ if __name__ == '__main__':
     print(f'positiveOption: {positiveOption}')
     print(f'interRelation: {interRelation}')
     print('saving to: ', saveTo)
-    evaluating(anchorOption, positiveOption, interRelation, saveTo)
+    evaluathandler(anchorOption, positiveOption, interRelation, saveTo)
 
-'''
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O0 \
-    --positiveCompiler clang-4.0 \
-    --positiveOptimization O1
-
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O0 \
-    --positiveCompiler clang-4.0 \
-    --positiveOptimization O2
-    
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O0 \
-    --positiveCompiler clang-4.0 \
-    --positiveOptimization O3
-
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O1 \
-    --positiveCompiler clang-4.0 \
-    --positiveOptimization O2
-    
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O1 \
-    --positiveCompiler clang-4.0 \
-    --positiveOptimization O3
-
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O2 \
-    --positiveCompiler clang-4.0 \
-    --positiveOptimization O3
-    
-
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O0 \
-    --positiveCompiler clang-obfus-bcf \
-    --positiveOptimization O0
-
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O0 \
-    --positiveCompiler clang-obfus-sub \
-    --positiveOptimization O0
-
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O0 \
-    --positiveCompiler clang-obfus-fla \
-    --positiveOptimization O0
-
-python evaluate.py \
-    --anchorCompiler clang-4.0 \
-    --anchorOptimization O0 \
-    --positiveCompiler clang-obfus-all \
-    --positiveOptimization O0
-'''
-
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Evaluate DBFCoder')
+    parser.add_argument('--anchorCompiler', type=str, default='clang-4.0')
+    parser.add_argument('--anchorOptimization', type=str, default='O0')
+    parser.add_argument('--positiveCompiler', type=str, default='clang-4.0')
+    parser.add_argument('--positiveOptimization', type=str, default='O1')
+    args = parser.parse_args()
+    evaluate(args)
 

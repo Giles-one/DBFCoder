@@ -5,6 +5,7 @@ import random
 from typing import Callable
 from collections import defaultdict
 from torch.utils.data import Dataset
+from itertools import permutations, combinations
 
 import logging
 logging.basicConfig(
@@ -31,10 +32,16 @@ def DBFCollate(batch):
     return batchedFunction
 
 class DBFCoderDatset(Dataset):
-    def __init__(self, datasetPath: str, shuffle: bool = False, maxNumFunc: int = None, randomGroup: bool = True):
+    validGroupPattern = ('random', 'permutation', 'combination')
+    def __init__(self, datasetPath: str, shuffle: bool = False, maxNumFunc: int = None, groupPattern: str = 'random'):
         self.maxNumFunc = maxNumFunc
         self.shuffle = shuffle
-        self.randomGroup = randomGroup
+
+        if groupPattern not in self.validGroupPattern:
+            logger.info(f'Not valid group pattern {groupPattern}. Setting group pattern to default **random**')
+            self.groupPattern = 'random'
+        else:
+            self.groupPattern = groupPattern
 
         self.functionList = []
         self.jsonFileLists = []
@@ -87,6 +94,7 @@ class DBFCoderDatset(Dataset):
                     continue
                 filePath = os.path.join(root, file)
                 self.jsonFileLists.append(filePath)
+        # random.shuffle(self.jsonFileLists)
         logger.info(f'found {MERGED_FUNCTION_INFO_SUFFIX}: {len(self.jsonFileLists)} ')
 
         functionIdx = 0
@@ -127,7 +135,7 @@ class DBFCoderDatset(Dataset):
                         It mean no peer function.
                         '''
                         continue
-                    if self.randomGroup:
+                    if self.groupPattern == 'random':
                         for functionIndex in group:
                             peerFunctionIndex = random.choice(group)
                             while peerFunctionIndex == functionIndex:
@@ -136,12 +144,16 @@ class DBFCoderDatset(Dataset):
                                 (functionIndex, peerFunctionIndex)
                             )
 
+                    elif self.groupPattern == 'permutation':
+                        permutationPairs = list(permutations(group, 2))
+                        self.sameSourceFunctionPairs.extend(permutationPairs)
+
+                    elif self.groupPattern == 'combination':
+                        combinationPairs = list(combinations(group, 2))
+                        self.sameSourceFunctionPairs.extend(combinationPairs)
+
                     else:
-                        for functionIndex in group:
-                            for peerFunctionIndex in group:
-                                self.sameSourceFunctionPairs.append(
-                                    (functionIndex, peerFunctionIndex)
-                                )
+                        raise ValueError(f'WTF: {self.groupPattern} is not supported.')
 
                     logger.debug(f'handle {fn}:{file}@{project} done.')
         logger.info(f'Got {len(self.sameSourceFunctionPairs)} pairs same source function.')
