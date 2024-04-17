@@ -76,14 +76,6 @@ $ python computeMetrics.py
 ```
 - lab1 AUC value
 
-|    | O0 | O1     | O2     | O3     | sub    | bcf    | fla    | all    |
-|----|----|--------|--------|--------|--------|--------|--------|--------|
-| O0 |    | 0.9984 | 0.9926 | 0.9985 | 0.9997 | 0.9918 | 0.9924 | 0.9719 |
-| O1 |    |        | 0.9970 | 0.9972 |        |        |        |        |
-| O2 |    |        |        | 0.9997 |        |        |        |        |
-| O3 |    |        |        |        |        |        |        |        |
-
-
 |    | O0 | O1         | O2                                                              | O3                                                              | sub        | bcf                                                                   | fla                                                                   | all                                                                   |
 |----|----|------------|-----------------------------------------------------------------|-----------------------------------------------------------------|------------|-----------------------------------------------------------------------|-----------------------------------------------------------------------|-----------------------------------------------------------------------|
 | O0 |    | [0.9984](experiment/images/lab1_clang-4.0-O0VSclang-4.0-O1.png) | [0.9926](experiment/images/lab1_clang-4.0-O0VSclang-4.0-O2.png) | [0.9985](experiment/images/lab1_clang-4.0-O0VSclang-4.0-O3.png) | [0.9997](experiment/images/lab1_clang-4.0-O0VSclang-obfus-sub-O0.png) | [0.9918](experiment/images/lab1_clang-4.0-O0VSclang-obfus-bcf-O0.png) | [0.9924](experiment/images/lab1_clang-4.0-O0VSclang-obfus-fla-O0.png) | [0.9719](experiment/images/lab1_clang-4.0-O0VSclang-obfus-all-O0.png) |
