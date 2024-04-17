@@ -70,8 +70,8 @@ $ WANDB_MODE=online CUDA_VISIBLE_DEVICES=7 python train.py
 - lab2: One-to-many binary code search
 
 ```
-$ CUDA_VISIBLE_DEVICES=6 bash lab1.sh
-$ CUDA_VISIBLE_DEVICES=5 bash lab2.sh
+$ CUDA_VISIBLE_DEVICES=6 bash lab1.sh model/save/best_model.pt
+$ CUDA_VISIBLE_DEVICES=5 bash lab2.sh model/save/best_model.pt
 $ python computeMetrics.py
 ```
 - lab1 AUC value
