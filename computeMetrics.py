@@ -11,12 +11,13 @@ logging.basicConfig(
     format='[%(levelname)s]->[%(asctime)s] -> %(message)s'
 )
 logger = logging.getLogger(__name__)
+
 def diaplyROC(fpr, tpr, aucValue, saveTo: str) -> None:
     lw = 2
     bwith = 2
     aucValue = ('%.4f' % aucValue)
     plt.plot(fpr, tpr, color='tomato', lw=lw, label='DBFCoder (area = ' + str(aucValue) + ')')
-    plt.legend(loc="lower right", prop={'size': 12})
+    # plt.legend(loc="lower right", prop={'size': 12})
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.0])
     plt.grid(color='silver', linestyle='-.', linewidth=1)
@@ -32,6 +33,7 @@ def diaplyROC(fpr, tpr, aucValue, saveTo: str) -> None:
     plt.tick_params(width=2, labelsize=12)
     plt.show()
     plt.savefig(saveTo)
+    plt.clf()
 
 def lab1_template(banner: str, dataFile: str):
     scores = []
